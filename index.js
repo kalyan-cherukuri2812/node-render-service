@@ -125,20 +125,15 @@
 //   console.log(`✅ Proxy server running on port ${PORT}`);
 // });
 
-
-
 const express = require("express");
 const { legacyCreateProxyMiddleware } = require("http-proxy-middleware");
 const cors = require("cors");
 require("dotenv").config();
 
 const app = express();
-
-// ⚙️ Parse JSON & URL-encoded bodies
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// 🔒 CORS setup
 app.use(cors({
   origin: ["http://localhost:5174", "https://bhim-admin-portal.web.app"],
   credentials: true,
@@ -146,56 +141,47 @@ app.use(cors({
   allowedHeaders: ["Content-Type", "Authorization"],
 }));
 
-// 🧭 Track proxy requests
 app.use("/api", (req, res, next) => {
   console.log(`› Proxying ${req.method} ${req.originalUrl}`);
   next();
 });
 
-// 🚫 Override referrer policy (optional)
 app.use((req, res, next) => {
   res.setHeader("Referrer-Policy", "no-referrer");
   next();
 });
 
-// 🌐 Load essential env vars
 const PORT = process.env.PORT || 5000;
 const BACKEND_URL = process.env.BACKEND_URL;
 if (!BACKEND_URL) {
-  console.error("❌ BACKEND_URL is missing! Check your .env or Render Env Vars.");
+  console.error("❌ BACKEND_URL is missing. Set it in .env or Render env vars.");
   process.exit(1);
 }
 console.log("🔗 Proxy target:", BACKEND_URL);
 
-// 🔄 Proxy API requests
-app.use(
-  "/api",
-  legacyCreateProxyMiddleware({
-    target: BACKEND_URL,
-    changeOrigin: true,
-    secure: false,
-    // ❗ Remove pathRewrite if backend already expects /api/…
-    // Remove this block or tweak it if your backend uses different path
-    pathRewrite: { "^/api": "" },
-    onProxyReq: (proxyReq, req) => {
-      if (req.body && req.method !== "GET") {
-        const body = JSON.stringify(req.body);
-        proxyReq.setHeader("Content-Type", "application/json");
-        proxyReq.write(body);
-      }
-      if (req.headers.authorization) {
-        proxyReq.setHeader("Authorization", req.headers.authorization);
-      }
-    },
-    onError: (err, req, res) => {
-      console.error(`❌ Proxy Error: ${err.message}`);
+app.use("/api", legacyCreateProxyMiddleware({
+  target: BACKEND_URL,
+  changeOrigin: true,
+  secure: false,
+  pathRewrite: { "^/api": "" },  // adjust or remove if backend expects full path
+  onProxyReq: (proxyReq, req) => {
+    if (req.body && req.method !== "GET") {
+      const bodyData = JSON.stringify(req.body);
+      proxyReq.setHeader("Content-Type", "application/json");
+      proxyReq.write(bodyData);
+    }
+    if (req.headers.authorization) {
+      proxyReq.setHeader("Authorization", req.headers.authorization);
+    }
+  },
+  onError: (err, req, res) => {
+    console.error(`❌ Proxy Error: ${err.message}`);
+    if (!res.headersSent) {
       res.status(500).json({ error: "Proxy Error", detail: err.message });
-    },
-  })
-);
+    }
+  }
+}));
 
-// 🚀 Start server
 app.listen(PORT, () => {
-  console.log(`✅ Proxy running on port ${PORT}`);
+  console.log(`✅ Proxy server is running on port ${PORT}`);
 });
-
