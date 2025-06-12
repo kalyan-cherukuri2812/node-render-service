@@ -56,6 +56,77 @@
 
 
 
+// const express = require("express");
+// const { legacyCreateProxyMiddleware } = require("http-proxy-middleware");
+// const cors = require("cors");
+// require("dotenv").config();
+
+// const app = express();
+
+// // ✅ Middleware to parse JSON and URL-encoded bodies
+// app.use(express.json());
+// app.use(express.urlencoded({ extended: true }));
+
+// // ✅ CORS Configuration
+// const corsOptions = {
+//   origin: ["http://localhost:5174", "https://bhim-admin-portal.web.app"], // add deployed frontend URL
+//   credentials: true,
+//   methods: ["GET", "POST", "PUT", "DELETE"],
+//   allowedHeaders: ["Content-Type", "Authorization"]
+// };
+// app.use(cors(corsOptions));
+
+// // ✅ Optional: Override referrer policy if needed
+// app.use((req, res, next) => {
+//   res.setHeader("Referrer-Policy", "no-referrer"); // or "origin-when-cross-origin"
+//   next();
+// });
+
+// // ✅ Get values from env
+// const PORT = process.env.PORT || 5000;
+// const BACKEND_URL = process.env.BACKEND_URL;
+
+// if (!BACKEND_URL) {
+//   console.error("❌ BACKEND_URL is not defined. Check your .env or Render settings.");
+//   process.exit(1);
+// }
+
+// console.log("🔗 Proxy target:", BACKEND_URL);
+
+// // ✅ Proxy middleware
+// app.use(
+//   "/api",
+//   legacyCreateProxyMiddleware({
+//     target: BACKEND_URL,
+//     changeOrigin: true,
+//     secure: false,
+//     pathRewrite: { "^/api": "" },
+//     onProxyReq: (proxyReq, req) => {
+//       if (req.body && req.method !== "GET") {
+//         const bodyData = JSON.stringify(req.body);
+//         proxyReq.setHeader("Content-Type", "application/json");
+//         proxyReq.write(bodyData);
+//       }
+
+//       // Forward Authorization header if present
+//       if (req.headers.authorization) {
+//         proxyReq.setHeader("Authorization", req.headers.authorization);
+//       }
+//     },
+//     onError: (err, req, res) => {
+//       console.error(`❌ Proxy Error: ${err.message}`);
+//       res.status(500).json({ error: "Proxy Error", detail: err.message });
+//     }
+//   })
+// );
+
+// // ✅ Start the server
+// app.listen(PORT, () => {
+//   console.log(`✅ Proxy server running on port ${PORT}`);
+// });
+
+
+
 const express = require("express");
 const { legacyCreateProxyMiddleware } = require("http-proxy-middleware");
 const cors = require("cors");
@@ -63,52 +134,55 @@ require("dotenv").config();
 
 const app = express();
 
-// ✅ Middleware to parse JSON and URL-encoded bodies
+// ⚙️ Parse JSON & URL-encoded bodies
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// ✅ CORS Configuration
-const corsOptions = {
-  origin: ["http://localhost:5174", "https://bhim-admin-portal.web.app"], // add deployed frontend URL
+// 🔒 CORS setup
+app.use(cors({
+  origin: ["http://localhost:5174", "https://bhim-admin-portal.web.app"],
   credentials: true,
   methods: ["GET", "POST", "PUT", "DELETE"],
-  allowedHeaders: ["Content-Type", "Authorization"]
-};
-app.use(cors(corsOptions));
+  allowedHeaders: ["Content-Type", "Authorization"],
+}));
 
-// ✅ Optional: Override referrer policy if needed
-app.use((req, res, next) => {
-  res.setHeader("Referrer-Policy", "no-referrer"); // or "origin-when-cross-origin"
+// 🧭 Track proxy requests
+app.use("/api", (req, res, next) => {
+  console.log(`› Proxying ${req.method} ${req.originalUrl}`);
   next();
 });
 
-// ✅ Get values from env
+// 🚫 Override referrer policy (optional)
+app.use((req, res, next) => {
+  res.setHeader("Referrer-Policy", "no-referrer");
+  next();
+});
+
+// 🌐 Load essential env vars
 const PORT = process.env.PORT || 5000;
 const BACKEND_URL = process.env.BACKEND_URL;
-
 if (!BACKEND_URL) {
-  console.error("❌ BACKEND_URL is not defined. Check your .env or Render settings.");
+  console.error("❌ BACKEND_URL is missing! Check your .env or Render Env Vars.");
   process.exit(1);
 }
-
 console.log("🔗 Proxy target:", BACKEND_URL);
 
-// ✅ Proxy middleware
+// 🔄 Proxy API requests
 app.use(
   "/api",
   legacyCreateProxyMiddleware({
     target: BACKEND_URL,
     changeOrigin: true,
     secure: false,
+    // ❗ Remove pathRewrite if backend already expects /api/…
+    // Remove this block or tweak it if your backend uses different path
     pathRewrite: { "^/api": "" },
     onProxyReq: (proxyReq, req) => {
       if (req.body && req.method !== "GET") {
-        const bodyData = JSON.stringify(req.body);
+        const body = JSON.stringify(req.body);
         proxyReq.setHeader("Content-Type", "application/json");
-        proxyReq.write(bodyData);
+        proxyReq.write(body);
       }
-
-      // Forward Authorization header if present
       if (req.headers.authorization) {
         proxyReq.setHeader("Authorization", req.headers.authorization);
       }
@@ -116,11 +190,12 @@ app.use(
     onError: (err, req, res) => {
       console.error(`❌ Proxy Error: ${err.message}`);
       res.status(500).json({ error: "Proxy Error", detail: err.message });
-    }
+    },
   })
 );
 
-// ✅ Start the server
+// 🚀 Start server
 app.listen(PORT, () => {
-  console.log(`✅ Proxy server running on port ${PORT}`);
+  console.log(`✅ Proxy running on port ${PORT}`);
 });
+
