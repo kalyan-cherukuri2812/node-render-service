@@ -163,24 +163,25 @@ app.use("/api", legacyCreateProxyMiddleware({
   target: BACKEND_URL,
   changeOrigin: true,
   secure: false,
-  pathRewrite: { "^/api": "" },  // adjust or remove if backend expects full path
+  pathRewrite: { "^/api": "" },
   onProxyReq: (proxyReq, req) => {
     if (req.body && req.method !== "GET") {
-      const bodyData = JSON.stringify(req.body);
+      const body = JSON.stringify(req.body);
       proxyReq.setHeader("Content-Type", "application/json");
-      proxyReq.write(bodyData);
+      proxyReq.write(body);
     }
     if (req.headers.authorization) {
       proxyReq.setHeader("Authorization", req.headers.authorization);
     }
   },
   onError: (err, req, res) => {
-    console.error(`❌ Proxy Error: ${err.message}`);
+    console.error("Proxy Error:", err.message);
     if (!res.headersSent) {
-      res.status(500).json({ error: "Proxy Error", detail: err.message });
+      res.status(500).json({ error: "Proxy failed", detail: err.message });
     }
   }
 }));
+
 
 app.listen(PORT, () => {
   console.log(`✅ Proxy server is running on port ${PORT}`);
