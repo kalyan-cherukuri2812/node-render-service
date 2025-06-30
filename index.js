@@ -11,7 +11,7 @@ app.use(express.urlencoded({ extended: true }));
 // ✅ Allow CORS for frontend
 app.use(cors({ 
   // origin: "http://localhost:5174", 
-  origin:"https://bhim-admin-portal.web.app",
+  origin:"https://unitask-6d75c.web.app",
   credentials: true }));
 app.use((req, res, next) => {
   res.setHeader("Access-Control-Allow-Origin", "*");
