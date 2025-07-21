@@ -1,18 +1,23 @@
 const express = require("express");
 const { legacyCreateProxyMiddleware } = require("http-proxy-middleware");
-const cors = require('cors')
+const cors = require("cors");
 require("dotenv").config();
 
-
 const app = express();
-app.use(express.json()); // Parses JSON requests
+
+// Middleware to parse JSON and URL-encoded data
+app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// ✅ Allow CORS for frontend
-app.use(cors({ 
-  // origin: "http://localhost:5174", 
-  origin:"https://unitask-6d75c.web.app",
-  credentials: true }));
+// ✅ CORS setup
+app.use(
+  cors({
+    origin: "https://unitask-6d75c.web.app",
+    credentials: true,
+  })
+);
+
+// ✅ Additional headers
 app.use((req, res, next) => {
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE");
@@ -20,53 +25,58 @@ app.use((req, res, next) => {
   next();
 });
 
-
 const PORT = process.env.PORT || 5000;
-const BACKEND_URL = process.env.BACKEND_URL// Make sure this is correct!
-console.log(BACKEND_URL)
+const BACKEND_URL = process.env.BACKEND_URL;
 
+console.log(`✅ BACKEND_URL: ${BACKEND_URL}`);
 
 app.use(
   "/api",
-  (req, res, next) => {
-    next();
-  },
   legacyCreateProxyMiddleware({
-    target: BACKEND_URL, 
+    target: BACKEND_URL,
     changeOrigin: true,
     secure: false,
-    pathRewrite: { "^/api": "" }, 
-    onProxyReq: (proxyReq, req, res) => {
-      console.log(proxyReq, "----------------------------proxyReqlog----------------------------");
-      console.log((req), "----------------------------Reqlog----------------------------");
-      console.log((res), "----------------------------before res log----------------------------");
-      
-      if (req.body && req.method !== "GET") {
-        let bodyData = JSON.stringify(req.body);
-        console.log((req.body), "----------------------------post req body----------------------------");
-        proxyReq.setHeader("Content-Type", "application/json");
-        // proxyReq.setHeader("Content-Length", Buffer.byteLength(bodyData));
-        proxyReq.write(bodyData);
-      }
-      console.log((res), "----------------------------post after res log----------------------------");
+    pathRewrite: { "^/api": "" },
 
+    onProxyReq: (proxyReq, req) => {
+      console.log(`➡️  [${req.method}] ${req.originalUrl}`);
+
+      if (req.body && req.method !== "GET") {
+        const bodyData = JSON.stringify(req.body);
+        proxyReq.setHeader("Content-Type", "application/json");
+        proxyReq.write(bodyData);
+        console.log("📦 Body:", req.body);
+      }
     },
-    onProxyRes: (proxyRes, req, res) => {
-            console.log((proxyRes), "----------------------------onProxyRes res log----------------------------");
-            console.log((req), "----------------------------onProxyRes req log----------------------------");
-            console.log((res), "----------------------------onProxyRes res log----------------------------");
+
+    onProxyRes: (proxyRes, req) => {
+      console.log(`✅ [${req.method}] ${req.originalUrl} - ${proxyRes.statusCode}`);
     },
+
     onError: (err, req, res) => {
-      console.log((err), "---------------------------- Proxy Error res log----------------------------");
-      console.log((req), "---------------------------- Proxy Error req log----------------------------");
-      console.log((res), "---------------------------- Proxy Error res log----------------------------");
+      console.error(`❌ Proxy error on ${req.method} ${req.originalUrl}`);
+      console.error("   Error message:", err.message);
+
+      // Respond to client and stop further execution
+      res.status(500).json({
+        success: false,
+        message: "Proxy error. Failed to reach backend service.",
+        error: err.message,
+      });
+
+      // Optional: terminate process for fatal errors (e.g., backend unreachable)
+      // if (err.code === 'ECONNREFUSED') {
+      //   process.exit(1);
+      // }
     },
   })
 );
 
-app.listen(PORT, async() => {
-  console.log(`✅ Proxy server running on port ${PORT}`);
+// ✅ Start the server
+app.listen(PORT, () => {
+  console.log(`🚀 Proxy server running on port ${PORT}`);
 });
+
 
 
 // const express = require("express");
