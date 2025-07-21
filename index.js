@@ -37,30 +37,30 @@ app.use(
     secure: false,
     pathRewrite: { "^/api": "" }, 
     onProxyReq: (proxyReq, req, res) => {
-      console.log(proxyReq, "proxyReqlog----------------------------");
-      console.log(JSON.stringify(req), "Reqlog----------------------------");
-      console.log(JSON.stringify(res), "before res log----------------------------");
+      console.log(proxyReq, "----------------------------proxyReqlog----------------------------");
+      console.log((req), "----------------------------Reqlog----------------------------");
+      console.log((res), "----------------------------before res log----------------------------");
       
       if (req.body && req.method !== "GET") {
         let bodyData = JSON.stringify(req.body);
-        console.log(JSON.stringify(req.body), "post req body----------------------------");
+        console.log((req.body), "----------------------------post req body----------------------------");
         proxyReq.setHeader("Content-Type", "application/json");
         // proxyReq.setHeader("Content-Length", Buffer.byteLength(bodyData));
         proxyReq.write(bodyData);
       }
-      console.log(JSON.stringify(res), "post after res log----------------------------");
+      console.log((res), "----------------------------post after res log----------------------------");
 
     },
     onProxyRes: (proxyRes, req, res) => {
-            console.log((proxyRes), "onProxyRes res log----------------------------");
-            console.log(JSON.stringify(req), "onProxyRes req log----------------------------");
-            console.log(JSON.stringify(res), "onProxyRes res log----------------------------");
+            console.log((proxyRes), "----------------------------onProxyRes res log----------------------------");
+            console.log((req), "----------------------------onProxyRes req log----------------------------");
+            console.log((res), "----------------------------onProxyRes res log----------------------------");
     },
     onError: (err, req, res) => {
       console.error(`❌ Proxy Error: ${err.message}`);
-      console.log(JSON.stringify(err), " Proxy Error res log----------------------------");
-      console.log(JSON.stringify(req), " Proxy Error req log----------------------------");
-      console.log(JSON.stringify(res), " Proxy Error res log----------------------------");
+      console.log((err), "---------------------------- Proxy Error res log----------------------------");
+      console.log((req), "---------------------------- Proxy Error req log----------------------------");
+      console.log((res), "---------------------------- Proxy Error res log----------------------------");
     },
   })
 );
