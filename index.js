@@ -37,7 +37,7 @@ app.use(
     secure: false,
     pathRewrite: { "^/api": "" }, 
     onProxyReq: (proxyReq, req, res) => {
-      console.log(JSON.stringify(proxyReq), "proxyReqlog----------------------------");
+      console.log(proxyReq, "proxyReqlog----------------------------");
       console.log(JSON.stringify(req), "Reqlog----------------------------");
       console.log(JSON.stringify(res), "before res log----------------------------");
       
@@ -52,7 +52,7 @@ app.use(
 
     },
     onProxyRes: (proxyRes, req, res) => {
-            console.log(JSON.stringify(proxyRes), "onProxyRes res log----------------------------");
+            console.log((proxyRes), "onProxyRes res log----------------------------");
             console.log(JSON.stringify(req), "onProxyRes req log----------------------------");
             console.log(JSON.stringify(res), "onProxyRes res log----------------------------");
     },
