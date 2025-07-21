@@ -57,7 +57,6 @@ app.use(
             console.log((res), "----------------------------onProxyRes res log----------------------------");
     },
     onError: (err, req, res) => {
-      console.error(`❌ Proxy Error: ${err.message}`);
       console.log((err), "---------------------------- Proxy Error res log----------------------------");
       console.log((req), "---------------------------- Proxy Error req log----------------------------");
       console.log((res), "---------------------------- Proxy Error res log----------------------------");
