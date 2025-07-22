@@ -51,8 +51,8 @@ app.use(
     secure: false,
     pathRewrite: { "^/api": "" },
 
-    onProxyReq: (proxyReq, req) => {
-      req.pipe(proxyReq);
+    // onProxyReq: (proxyReq, req) => {
+    //   req.pipe(proxyReq);
 },
 
     onProxyRes: (proxyRes, req) => {
@@ -83,6 +83,7 @@ app.listen(PORT, () => {
   console.log(`🚀 Proxy server running on port ${PORT}`);
 });
 
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
 // const express = require("express");
