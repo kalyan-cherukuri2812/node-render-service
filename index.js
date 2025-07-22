@@ -52,23 +52,7 @@ app.use(
     pathRewrite: { "^/api": "" },
 
     onProxyReq: (proxyReq, req) => {
-  const contentType = req.headers['content-type'] || '';
-
-  if (req.method !== 'GET' && req.method !== 'HEAD') {
-    if (contentType.includes('application/json')) {
-      // Manually forward JSON body
-      let bodyData = '';
-      req.on('data', chunk => (bodyData += chunk));
-      req.on('end', () => {
-        proxyReq.setHeader('Content-Length', Buffer.byteLength(bodyData));
-        proxyReq.write(bodyData);
-      });
-    } else {
-      // For multipart/form-data, urlencoded, etc.
-      // Just forward the raw stream
       req.pipe(proxyReq);
-    }
-  }
 },
 
     onProxyRes: (proxyRes, req) => {
