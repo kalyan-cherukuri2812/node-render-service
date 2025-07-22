@@ -6,8 +6,14 @@ require("dotenv").config();
 const app = express();
 
 // Middleware to parse JSON and URL-encoded data
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use((req, res, next) => {
+  if (req.url.startsWith("/api")) return next();
+  express.json()(req, res, next);
+});
+app.use((req, res, next) => {
+  if (req.url.startsWith("/api")) return next();
+  express.urlencoded({ extended: true })(req, res, next);
+});
 
 // ✅ CORS setup
 app.use(
@@ -18,12 +24,12 @@ app.use(
 );
 
 // ✅ Additional headers
-app.use((req, res, next) => {
-  res.setHeader("Access-Control-Allow-Origin", "*");
-  res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE");
-  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
-  next();
-});
+// app.use((req, res, next) => {
+//   res.setHeader("Access-Control-Allow-Origin", "*");
+//   res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE");
+//   res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+//   next();
+// });
 
 const PORT = process.env.PORT || 5000;
 const BACKEND_URL = process.env.BACKEND_URL;
