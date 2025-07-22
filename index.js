@@ -41,12 +41,12 @@ app.use(
     onProxyReq: (proxyReq, req) => {
       console.log(`➡️  [${req.method}] ${req.originalUrl}`);
 
-      // if (req.body && req.method !== "GET") {
-      //   const bodyData = JSON.stringify(req.body);
-      //   proxyReq.setHeader("Content-Type", "application/json");
-      //   proxyReq.write(bodyData);
-      //   console.log("📦 Body:", req.body);
-      // }else
+      if (req.body && req.method !== "GET") {
+        const bodyData = JSON.stringify(req.body);
+        proxyReq.setHeader("Content-Type", "application/json");
+        proxyReq.write(bodyData);
+        console.log("📦 Body:", req.body);
+      }
  if (req.method !== "GET" && req.method !== "HEAD") {
 
         req.pipe(proxyReq); // pipe raw FormData stream
