@@ -53,7 +53,7 @@ app.use(
 
     // onProxyReq: (proxyReq, req) => {
     //   req.pipe(proxyReq);
-},
+// },
 
     onProxyRes: (proxyRes, req) => {
       console.log(`✅ [${req.method}] ${req.originalUrl} - ${proxyRes.statusCode}`);
