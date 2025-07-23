@@ -16,12 +16,30 @@ app.use((req, res, next) => {
 });
 
 // ✅ CORS setup
+const allowedOrigins = [
+  "https://unitask-6d75c.web.app",
+  "http://localhost:5174"
+];
+
 app.use(
   cors({
-    origin: "https://unitask-6d75c.web.app",
+    origin: function (origin, callback) {
+      // allow requests with no origin (like mobile apps or curl)
+      if (!origin) return callback(null, true);
+      if (allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+      return callback(new Error("Not allowed by CORS"));
+    },
     credentials: true,
   })
 );
+// app.use(
+//   cors({
+//     origin: "https://unitask-6d75c.web.app",
+//     credentials: true,
+//   })
+// );
 
 // ✅ Additional headers
 app.use((req, res, next) => {
