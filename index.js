@@ -17,7 +17,7 @@ app.use((req, res, next) => {
 
 // ✅ CORS setup
 const allowedOrigins = [
-  "https://unitask-6d75c.web.app",
+  "https://unitask-portal.web.app",
   "http://localhost:5174"
 ];
 
