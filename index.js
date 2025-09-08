@@ -73,9 +73,9 @@ app.use(
     //   req.pipe(proxyReq);
 // },
 
-    onProxyRes: (proxyRes, req) => {
-      console.log(`✅ [${req.method}] ${req.originalUrl} - ${proxyRes.statusCode}`);
-    },
+    // onProxyRes: (proxyRes, req) => {
+    //   console.log(`✅ [${req.method}] ${req.originalUrl} - ${proxyRes.statusCode}`);
+    // },
 
     onError: (err, req, res) => {
       console.error(`❌ Proxy error on ${req.method} ${req.originalUrl}`);
